@@ -1,12 +1,39 @@
-﻿using System;
-
-namespace Producer
+﻿namespace RabbitMqSend
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
-            Console.WriteLine("Hello World!");
-        }
-    }
-}
+            // specify the MQ server we're connecting to
+            // in our case its localhost since we're running
+            // in a local docker container
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            
+            // 1. create connection
+            using (var connection = factory.CreateConnection())
+
+            // 2. create channel
+            using (var channel = connection.CreateModel())
+            {
+                // 3. connect to the queue
+                channel.QueueDeclare(queue: "heroes",
+                                     durable: false,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+
+                int index = 1;
+                while (index <= 99999)
+                {
+                    // we need to write data in the form of bytes
+                    string message = $"{index}|SuperHero{10000+index}|Fly,Eat,Sleep,Manga|1|{DateTime.UtcNow.ToLongDateString()}|0|0"; 
+                    var body = Encoding.UTF8.GetBytes(message); 
+                    
+                    // push content into the queue 
+                    channel.BasicPublish(exchange: "", routingKey: "heroes", basicProperties: null, body: body); 
+                    Console.WriteLine(" [x] Sent {0}", message); index++; Thread.Sleep(10000); 
+                } 
+            } 
+        } 
+    } 
+} 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using RabbitMQ.Client;
 
 namespace RabbitMqSend
@@ -14,7 +15,7 @@ namespace RabbitMqSend
             var factory = new ConnectionFactory() { HostName = "localhost" };
 
             // 1. create connection
-            using (var connection = factory.CreateConnectionAsync())
+            using (var connection = factory.CreateConnection())
 
             // 2. create channel
             using (var channel = connection.CreateModel())
